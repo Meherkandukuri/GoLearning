@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -43,16 +42,4 @@ func (rl *RateLimiter_WA) Allow_WA() bool {
 		return true
 	}
 	return false
-}
-
-func main() {
-	rateLimiter := NewRatelimiter_WA(5, 2*time.Second)
-	for range 10 {
-		if rateLimiter.Allow_WA() {
-			fmt.Println("Request allowed.")
-		} else {
-			fmt.Println("Request not allowed.")
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
 }

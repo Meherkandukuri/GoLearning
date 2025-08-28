@@ -1,11 +1,17 @@
 package domain
 
+// Move represents a player's move in the game.
+// Player is the player making the move.
+// Col is the column where the move is made.
+// Row is the row where the move lands.
 type Move struct {
 	Player PlayerID
-	Col int
-	Row int
+	Col    int
+	Row    int
 }
 
+// Do executes the move, updates the game state, and checks for a winner.
+// It returns an error if the move is invalid.
 func (m *Move) Do(g *Game) error {
 	if g.State == Finished {
 		return ErrGameFinished
@@ -31,6 +37,9 @@ func (m *Move) Do(g *Game) error {
 	return nil
 }
 
+// Undo reverts the move and updates the game state.
+// It resets the row, changes the game state to in progress,
+// clears the winner, and switches the turn to the other player.
 func (m *Move) Undo(g *Game) {
 	g.Board.UndoDrop(m.Col)
 	g.State = InProgress

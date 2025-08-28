@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -57,18 +56,4 @@ func (rl *RateLimiter) Allow() bool {
 func (rl *RateLimiter) Stop() {
 	close(rl.quit)
 	rl.refillTimer.Stop()
-}
-
-func main() {
-	rl := NewRateLimiter(5, 5, time.Second)
-	defer rl.Stop()
-
-	for i := 0; i < 15; i++ {
-		if rl.Allow() {
-			fmt.Println("Request allowed")
-		} else {
-			fmt.Println("Request denied")
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
 }

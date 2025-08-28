@@ -5,6 +5,8 @@ import (
 	"connect4/usecase"
 	"fmt"
 	"os"
+
+	"github.com/MeherKandukuri/GoLearning/ObjectOrientedDesignQuestions/ConnectFour/domain"
 )
 
 func RunCLI(uc *usecase.GameUsecase) {
