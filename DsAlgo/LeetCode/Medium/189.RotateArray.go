@@ -1,5 +1,7 @@
 package Medium
 
+import "strings"
+
 func rotate(nums []int, k int) {
 
 	n := len(nums)
