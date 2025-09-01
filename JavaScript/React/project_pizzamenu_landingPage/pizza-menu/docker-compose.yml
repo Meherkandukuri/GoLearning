@@ -1,0 +1,18 @@
+services:
+  react-app:
+    build:
+      context: .   # use current directory as build context
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - WATCHPACK_POLLING=true
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+          ignore:
+            - node_modules
+        - action: rebuild
+          path: package.json
