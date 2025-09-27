@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
@@ -18,6 +20,9 @@ import (
 )
 
 func main() {
+	// load .env if present (local dev convenience)
+	_ = godotenv.Load()
+
 	var (
 		addr      = flag.String("addr", ":8080", "HTTP listen address")
 		dsn       = flag.String("dsn", os.Getenv("VT_DATABASE_DSN"), "Postgres DSN")

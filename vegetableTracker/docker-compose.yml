@@ -29,5 +29,28 @@ services:
       - ./backend/migrations:/migrations:ro
     restart: 'no'
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - VT_DATABASE_DSN=postgres://vtuser:vtpass@db:5432/vegtracker?sslmode=disable
+      - VT_JWT_SECRET=dev-secret-change-me
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - VITE_API_BASE=http://host.docker.internal:8080/api
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
 volumes:
   pgdata:

@@ -11,4 +11,7 @@ require (
 	golang.org/x/crypto v0.23.0
 )
 
-require google.golang.org/appengine v1.6.8 // indirect
+require (
+	github.com/joho/godotenv v1.5.1 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
+)
