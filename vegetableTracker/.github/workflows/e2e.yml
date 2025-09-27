@@ -1,0 +1,78 @@
+name: E2E Smoke Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: vtuser
+          POSTGRES_PASSWORD: vtpass
+          POSTGRES_DB: vegtracker
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vtuser -d vegtracker"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Provide these secrets in your repository settings: VT_DATABASE_DSN and VT_JWT_SECRET
+      DATABASE_DSN: ${{ secrets.VT_DATABASE_DSN }}
+      VT_JWT_SECRET: ${{ secrets.VT_JWT_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq postgresql-client
+
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h localhost -p 5432 -U vtuser; do echo "waiting for postgres..."; sleep 1; done
+
+      - name: Apply migrations
+        run: |
+          echo "Applying SQL migrations using DATABASE_DSN"
+          for f in backend/migrations/*.sql; do
+            echo "Applying $f"
+            # psql accepts a connection URI; use the DATABASE_DSN secret
+            psql "$DATABASE_DSN" -f "$f"
+          done
+
+      - name: Build backend
+        working-directory: backend
+        run: go build ./...
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          export VT_DATABASE_DSN="$DATABASE_DSN"
+          export VT_JWT_SECRET="$VT_JWT_SECRET"
+          nohup go run ./cmd/api > backend.log 2>&1 &
+          # wait for server
+          for i in {1..20}; do
+            if curl -sSf http://localhost:8080/api/vegetables >/dev/null 2>&1; then
+              echo "backend up"; break
+            fi
+            echo "waiting for backend..."; sleep 1
+          done
+
+      - name: Run e2e smoke script
+        run: |
+          chmod +x ./scripts/e2e_smoke.sh
+          ./scripts/e2e_smoke.sh

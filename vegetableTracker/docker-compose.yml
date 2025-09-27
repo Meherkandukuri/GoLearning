@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: vegtracker-db
+    environment:
+      POSTGRES_USER: vtuser
+      POSTGRES_PASSWORD: vtpass
+      POSTGRES_DB: vegtracker
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+
+  # one-shot migration runner (will run the SQL in backend/migrations)
+  migrate:
+    image: postgres:15
+    depends_on:
+      - db
+    entrypoint: ["bash", "-c"]
+    command: |
+      "echo 'waiting for postgres...' && \
+      until pg_isready -h db -p 5432; do sleep 1; done; \
+      echo 'applying migrations'; \
+      psql postgresql://vtuser:vtpass@db:5432/vegtracker -f /migrations/001_init.sql && echo 'migrations applied'"
+    volumes:
+      - ./backend/migrations:/migrations:ro
+    restart: 'no'
+
+volumes:
+  pgdata:
